@@ -19,8 +19,20 @@ weights are never inherited (no Lamarckism). That separation is the entire point
 
 **Mode 1 — within-life learning (teaching).** Open the viewer, select a creature,
 and teach it with reward/punish keys. A creature that can learn pulls measurably
-ahead of an otherwise-identical frozen "control" creature at foraging. Headless
-evidence is in `benchmark.py`:
+ahead of an otherwise-identical frozen "control" creature at foraging.
+
+![the interactive viewer](docs/screenshot.png)
+
+The right-hand inspector shows the selected creature's biochemistry (energy,
+hunger, reward, punishment, pain, fatigue), its three-factor learning readout
+(learning rate + live neuromodulator), a **real-time picture of its neural net**
+— every node colored by activation, every synapse drawn and tinted by its current
+weight as the brain re-wires — and a chart of food eaten since you selected it,
+the taught creature (yellow) against the frozen control (grey). The frame above
+is a real run: the pupil has learned to feed itself (118 vs the control's 3),
+purely from intrinsic reward.
+
+Headless evidence for the same effect is in `benchmark.py`:
 
 ```
 $ python benchmark.py
@@ -54,13 +66,22 @@ pip install numpy pygame          # the only dependencies (pytest for the tests)
 
 # Mode 1: interactive teaching viewer
 python main.py --mode interactive
-#   click  : select a creature
-#   hold R : inject reward into the selected creature
-#   hold P : inject punishment
-#   SPACE  : pause     ESC/close : quit
-#   The grey-ringed creature is the frozen, untaught control.
-#   A yellow (taught) vs grey (control) food-rate sparkline is drawn along the
-#   bottom; on quit the metric is dumped to teaching_metric.csv so it is plottable.
+#   click / TAB : select a creature (TAB cycles through them)
+#   hold R      : reward the selected creature  ("yes, like that")
+#   hold P      : punish the selected creature  ("no, not that")
+#   SPACE       : pause / resume
+#   [ ]         : slow down / speed up the simulation (1x..8x)
+#   N           : spawn a fresh random creature
+#   C           : jump selection to the frozen control creature
+#   F           : toggle follow highlight
+#   S           : save a screenshot (./screenshots/)
+#   ESC / close : quit (writes teaching_metric.csv so the curve is plottable)
+#
+#   The grey dashed-ring creature is the frozen, untaught control. The creature
+#   you are teaching (and the control) are kept from starving so you can teach a
+#   single pupil continuously and watch it pull ahead. Try: select a wanderer,
+#   hold R whenever it heads toward green food, hold P when it drifts toward a red
+#   hazard, and watch the yellow line in the chart climb above the grey one.
 
 # Mode 2: headless evolution
 python main.py --mode evolve --generations 200 --pop 40   # writes stats.csv

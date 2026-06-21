@@ -7,3 +7,5 @@ stats.csv
 teaching_metric.csv
 learning.csv
 *.genome.json
+
+screenshots/
