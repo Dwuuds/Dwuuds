@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+# generated artifacts
+stats.csv
+teaching_metric.csv
+learning.csv
+*.genome.json
