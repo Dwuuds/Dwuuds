@@ -129,7 +129,7 @@ const WEAPONS = {
   nova: {
     name: 'Nova Burst', color: '#ffd058', icon: '✳',
     desc: l => ['Radial burst of shards', 'More shards', '+damage', 'Faster bursts', 'Massive burst'][l - 1],
-    stats: l => ({ cd: [2.6, 2.6, 2.4, 2.0, 1.8][l - 1], dmg: [8, 8, 13, 13, 18][l - 1], count: [10, 14, 14, 18, 24][l - 1], speed: 270 }),
+    stats: l => ({ cd: [2.6, 2.6, 2.4, 2.0, 1.8][l - 1], dmg: [9, 9, 14, 14, 20][l - 1], count: [10, 14, 14, 18, 24][l - 1], speed: 270 }),
   },
   orbit: {
     name: 'Orbit Shields', color: '#c47dff', icon: '◍',
@@ -144,7 +144,7 @@ const WEAPONS = {
   trail: {
     name: 'Plasma Trail', color: '#7dff8e', icon: '∴',
     desc: l => ['Leave burning plasma behind you', 'Longer burn', '+damage', 'Wider plasma', 'Inferno wake'][l - 1],
-    stats: l => ({ drop: 0.24, life: [2.2, 3.2, 3.2, 3.6, 4.0][l - 1], dmg: [5, 5, 8, 8, 12][l - 1], radius: [26, 26, 26, 34, 40][l - 1], tick: 0.3 }),
+    stats: l => ({ drop: 0.24, life: [2.2, 3.2, 3.2, 3.6, 4.0][l - 1], dmg: [6, 6, 9, 9, 13][l - 1], radius: [26, 26, 26, 34, 40][l - 1], tick: 0.3 }),
   },
 };
 const PASSIVES = {
@@ -167,9 +167,9 @@ const ENEMIES = {
 };
 const BOSS_TIMES = [180, 360, 540];
 const BOSS_STATS = [
-  { hp: 1000, spd: 42, r: 34, dmg: 22, gold: 60 },
-  { hp: 2800, spd: 46, r: 40, dmg: 26, gold: 120 },
-  { hp: 6500, spd: 50, r: 48, dmg: 30, gold: 250 },
+  { hp: 700, spd: 42, r: 34, dmg: 22, gold: 60 },
+  { hp: 2200, spd: 46, r: 40, dmg: 26, gold: 120 },
+  { hp: 5000, spd: 50, r: 48, dmg: 30, gold: 250 },
 ];
 
 // ---------- world ----------
@@ -336,14 +336,15 @@ function makeEnemy(typeKey, x, y, hpMul) {
   return { type: typeKey, x, y, hp: T.hp * hpMul, hpMax: T.hp * hpMul, r: T.r, spd: T.spd * rand(0.9, 1.1),
            dmg: T.dmg, color: T.color, shape: T.shape, gold: T.gold, xp: T.xp, hitT: 0, boss: false, wob: Math.random() * TAU };
 }
-function hpMulNow() { return 1 + G.t * 0.009 + Math.pow(G.t / 300, 2) * 0.5; }
+function hpMulNow() { return 1 + G.t * 0.008 + Math.pow(G.t / 320, 2) * 0.5; }
 function spawnTick(dt) {
   if (G.enemies.length > 260) return;
   G.spawnT -= dt;
-  const interval = Math.max(0.3, 1.05 - G.t * 0.0012);
+  let interval = Math.max(0.34, 1.05 - G.t * 0.0011);
+  if (G.boss) interval *= 3.2; // let the boss be the fight, not the flood
   if (G.spawnT <= 0) {
     G.spawnT = interval;
-    const batch = 1 + Math.floor(G.t / 110);
+    const batch = 1 + Math.floor(G.t / 120);
     const avail = Object.keys(ENEMIES).filter(k => k !== 'mini' && ENEMIES[k].from <= G.t);
     const mul = hpMulNow();
     for (let i = 0; i < batch; i++) {
@@ -351,9 +352,9 @@ function spawnTick(dt) {
       G.enemies.push(makeEnemy(pick(avail), p.x + rand(-30, 30), p.y + rand(-30, 30), mul));
     }
   }
-  // surge ring every 60s
+  // surge ring every 60s (paused during boss fights)
   G.surgeT -= dt;
-  if (G.surgeT <= 0) {
+  if (G.surgeT <= 0 && !G.boss) {
     G.surgeT = 60;
     const n = 8 + Math.floor(G.t / 60) * 2;
     const avail = Object.keys(ENEMIES).filter(k => k !== 'mini' && ENEMIES[k].from <= G.t);
@@ -874,7 +875,7 @@ function render() {
     ctx.fillRect(0, 0, W, H);
   }
 
-  renderHUD();
+  if (!CLEAN) renderHUD();
 
   if (state === 'levelup') renderLevelUp();
   else if (state === 'pause') renderPause();
@@ -1216,6 +1217,7 @@ function renderEnd() {
 // ---------- demo mode (screenshots / testing) ----------
 const qs = new URLSearchParams(location.search);
 const DEMO = qs.has('demo');
+const CLEAN = qs.has('clean'); // hide HUD for marketing shots
 function applyDemo() {
   G.weapons = { bolt: 3, nova: 3, orbit: 2, zap: 3 };
   G.passives = { pdmg: 2, pmag: 2 };
